@@ -1,0 +1,142 @@
+
+
+{% extends 'home.html' %}
+{% block content %}
+
+    <div>
+        <form id="form-1">
+            {% csrf_token %}
+            <label for="name">BANK NAME:</label><br>
+            <input type="text" id="name" name="name" placeholder="Bank Name.."><br>
+    
+            <label for="name">CITY NAME:</label><br>
+            <input type="text" id="city" name="city" placeholder="City Name.."><br>
+    
+            <button id="btn-1" type="submit">Submit</button>
+        </form> 
+    </div>
+
+    <div id="table-1">
+    </div>
+
+    <hr>
+    <br>
+    <br>
+    <div>
+        <form id="form-2">
+            <label for="ifsc">IFSC:</label><br>
+            <input type="text" id="ifsc" name="ifsc" placeholder="Ifsc Code.."><br>
+            <button id="btn-ifsc" type="submit">Submit</button>
+        </form> 
+    </div>
+    <hr>
+
+    <div id="table-2">
+    </div>
+    <script type="text/javascript">
+        function getToken(name) {
+                var cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    var cookies = document.cookie.split(';');
+                    for (var i = 0; i < cookies.length; i++) {
+                        var cookie = cookies[i].trim();
+                        // Does this cookie string begin with the name we want?
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+        
+        var form_1=document.getElementById('form-1')
+        
+        form_1.addEventListener('submit',function(e){
+            e.preventDefault()
+            var name=form_1.name.value
+            var city=form_1.city.value
+            console.log('form submitted', name,city)
+
+
+
+            var csrftoken = getToken('csrftoken')
+            var url='/branches_data/'
+            fetch(url,{
+                method:"POST",
+                headers:{
+                    'Content-Type':'application/json',
+                    'X-CSRFToken':csrftoken,
+                },
+                body:JSON.stringify({'name':name,'city':city})
+            })
+            .then((response)=>response.json())
+            .then((data)=>{
+
+
+                var branches=data.branches_list
+
+                document.getElementById("table-1").innerHTML = "";  
+                
+                for(var i=0;i<branches.length;i++){
+                    branch=branches[i]
+                    var newTable = "<table border='1' width='100%'><tr>";
+                    for(let x in branch) { 
+                        newTable += "<tr><td align='center'>" +x+"  :  "+ branch[x] + "</td></tr>";
+                    }
+                    newTable += "</tr></table><hr>";
+
+                    document.getElementById("table-1").innerHTML += newTable;
+                }
+                
+            })
+
+
+        })
+        
+
+
+        var form_2=document.getElementById('form-2')
+        
+        form_2.addEventListener('submit',function(e){
+            e.preventDefault()
+            var ifsc=form_2.ifsc.value
+            console.log('form submitted & ifsc ', ifsc,name)
+
+    
+            var csrftoken = getToken('csrftoken')
+
+            var url='/ifsc/'
+            fetch(url,{
+                method:"POST",
+                headers:{
+                    'Content-Type':'application/json',
+                    'X-CSRFToken':csrftoken,
+                },
+                body:JSON.stringify({'ifsc':ifsc})
+            })
+            .then((response)=>response.json())
+            .then((data)=>{
+                var branch=data.msg
+
+                document.getElementById("table-2").innerHTML = "";
+
+                var newTable = "<table border='1' width='100%'><tr>";
+                for(let x in branch) { 
+                    newTable += "<tr><td align='center'>" +x+"  :  "+ branch[x] + "</td></tr>";
+                }
+                newTable += "</tr></table>";
+
+                document.getElementById("table-2").innerHTML = newTable;
+                
+                
+            })
+
+
+        })
+    
+    </script>
+
+{% endblock content %}
+
+
